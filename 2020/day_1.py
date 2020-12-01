@@ -1,21 +1,10 @@
 
 # https://adventofcode.com/2020/day/1
 
-import fileinput
 import math
+import common
 
 
-#### hoping to move this to a util file, but still figuring out how to get the right directories set up
-
-def AryNFromFile(strFile):
-    aryN = []
-    f = fileinput.input(files=(strFile))
-    for line in f:
-        aryN.append(int(line))
-    f.close()
-    return aryN
-
-####
 
 # Gets a list of numbers from the input with length cN that has the sum of nSum
 
@@ -51,7 +40,7 @@ def PrintProductOfNumbersWithSum(aryN, cN, nSum):
     print(NProductOfIntegerSubsetWithSum(aryNInput, cN, nSum))
 
 def Main():
-    aryNInput = AryNFromFile('2020/input/day_1.txt')
+    aryNInput = common.AryNFromFile('2020/input/day_1.txt')
     print(NProductOfIntegerSubsetWithSum(aryNInput, 2, 2020))
     print(NProductOfIntegerSubsetWithSum(aryNInput, 3, 2020))
 
