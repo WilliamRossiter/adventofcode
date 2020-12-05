@@ -36,6 +36,7 @@ def NProductOfTreesPerSlope(aryStrTreeGrid, cChRow, chTree, arySlope):
 def Main():
     aryStr = AryStrRead('2020/input/day_3.txt');
     arySlope = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+    print(NProductOfTreesPerSlope(aryStr, len(aryStr[0]), '#', [(3, 1)]))
     print(NProductOfTreesPerSlope(aryStr, len(aryStr[0]), '#', arySlope))
 
 Main()
