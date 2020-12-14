@@ -1,6 +1,12 @@
 
 import math
 
+def NProductFromArray(aryN):
+    nProduct = 1
+    for n in aryN:
+        nProduct *= n
+    return nProduct
+
 def Main(strFile):
     aryStrInput = []
     with open(strFile) as f:
@@ -27,19 +33,22 @@ def Main(strFile):
             nBusLeast = nBus
             nMinWaitLeast = nMinWait
     print (nMinWaitLeast * nBusLeast)
-    iBusMax = aryNBus.index(max(aryNBus))
-    cArrival = 1
-    nTimestampMatching = 0
-    while True:
-        nTimestampMatching = (aryNBus[iBusMax] * cArrival) - arydMin[iBusMax]
-        fIsValid = True
-        for iBus in range(len(aryNBus)):
-            if (nTimestampMatching + arydMin[iBus]) % aryNBus[iBus] != 0:
-                fIsValid = False
+    nTimestamp = aryNBus[0]
+    nIncr = aryNBus[0]
+    cBus = 1
+    while cBus <= len(aryNBus):
+        while True:
+            fIsValid = True
+            for iBus in range(len(aryNBus[:cBus])):
+                if (nTimestamp + arydMin[iBus]) % aryNBus[iBus] != 0:
+                    fIsValid = False
+                    break
+            if fIsValid:
                 break
-        cArrival += 1
-        if fIsValid:
-            break
-    print(nTimestampMatching)
+            else:
+                nTimestamp += nIncr
+        nIncr = NProductFromArray(aryNBus[:cBus])
+        cBus += 1
+    print(nTimestamp)
 
 Main('2020/input/day_13.txt')
