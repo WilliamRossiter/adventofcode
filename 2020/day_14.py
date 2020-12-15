@@ -50,46 +50,51 @@ def RunProgramDecoder1(program, mem):
         else:
             mem[instr[1]] = ApplyMask(instr[2], mask)
 
-def AddMaskCombinations(maskBase, masks):
-    for iBit in range(len(maskBase)):
-        bit = maskBase[iBit]
-        if (bit == -1):
-            maskBase0 = maskBase.copy()
-            maskBase0[iBit] = 0
-            AddMaskCombinations(maskBase0, masks)
-            maskBase1 = maskBase.copy()
-            maskBase1[iBit] = 1
-            AddMaskCombinations(maskBase1, masks)
+def SetMemFloating(addrPartial, val, mem):
+    addrFinal = 0
+    for iBit in range(len(addrPartial)):
+        bit = addrPartial[iBit]
+        if (bit == '1'):
+            addrFinal += (1 << iBit)
+        elif (bit == 'X'):
+            addrPartial0 = addrPartial.copy()
+            addrPartial0[iBit] = '0'
+            SetMemFloating(addrPartial0, val, mem)
+            addrPartial1 = addrPartial.copy()
+            addrPartial1[iBit] = '1'
+            SetMemFloating(addrPartial1, val, mem)
             return
-    masks.append(maskBase)
+    mem[addrFinal] = val
+
+def SetMem2(addr, mask, val, mem):
+    addrPartial = []
+    for iBit in range(len(mask)):
+        bit = mask[iBit]
+        if (bit == '1'):
+            addrPartial.append('1')
+        elif (bit == 'X'):
+            addrPartial.append('X')
+        elif (((1 << iBit) & addr) != 0):
+            addrPartial.append('1')
+        else:
+            addrPartial.append('0')
+    SetMemFloating(addrPartial, val, mem)
 
 def RunProgramDecoder2(program, mem):
-    maskBase = []
-    masks = []
+    mask = []
     for instr in program:
         if (instr[0] == 'mask'):
-            maskBase = []
-            masks = []
-            for iCh in range(len(instr[1])):
-                ch = instr[1][iCh]
-                if (ch == '0'):
-                    maskBase.append(0)
-                elif (ch == '1'):
-                    maskBase.append(1)
-                else:
-                    maskBase.append(-1)
-            AddMaskCombinations(maskBase, masks)
+            mask = instr[1]
         else:
-            for mask in masks:
-                addr = ApplyMask(instr[1], mask)
-                mem[addr] = instr[2]
+            SetMem2(instr[1], mask, instr[2], mem)
 
 def Main(strFile):
     program = ProgramParse(strFile)
     mem = {}
-    #RunProgramDecoder1(program, mem)
+    RunProgramDecoder1(program, mem)
+    print(SumOfDictEntries(mem))
+    mem = {}
     RunProgramDecoder2(program, mem)
-    print(mem)
     print(SumOfDictEntries(mem))
 
 Main('2020/input/day_14.txt')
