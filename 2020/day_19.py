@@ -1,5 +1,5 @@
 
-import re
+import regex
 
 class Input:
     def __init__(self, strFile):
@@ -8,60 +8,45 @@ class Input:
             self.messages = inputParts[1].split('\n')
             inputRules = inputParts[0].split('\n')
             self.rules = {}
-            self.regex = ""
-            # ugh, this is gross and is a result of being impatient. Tokenization would make more sense
             for inputRule in inputRules:
-                match = re.match("(\d+): (\d+) (\d+) \| (\d+) (\d+)", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = ([int(match[2]), int(match[3])], [int(match[4]), int(match[5])])
-                    continue
-                match = re.match("(\d+): (\d+) \| (\d+)", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = (int(match[2]), int(match[3]))
-                    continue
-                match = re.match("(\d+): (\d+) (\d+) (\d+)", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = [int(match[2]), int(match[3]), int(match[4])]
-                    continue  
-                match = re.match("(\d+): (\d+) (\d+)", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = [int(match[2]), int(match[3])]
-                    continue
-                match = re.match("(\d+): (\d+)", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = int(match[2])
-                    continue
-                match = re.match("(\d+): \"(\w)\"", inputRule)
-                if match != None:
-                    self.rules[int(match[1])] = match[2]
-                    continue
+                ruleParts = inputRule.split(':')
+                ruleIndex = int(ruleParts[0])
+                if '|' in ruleParts[1]:
+                    ruleOptions = ruleParts[1].split('|')
+                    ruleOption1 = ruleOptions[0]
+                    ruleOption2 = ruleOptions[1]
+                    self.rules[ruleIndex] = ([int(i) for i in ruleOption1.split()], [int(i) for i in ruleOption2.split()])
+                elif '"' in ruleParts[1]:
+                    self.rules[ruleIndex] = regex.match(r' "(\w)"', ruleParts[1])[1]
+                else:
+                    self.rules[ruleIndex] = [int(i) for i in ruleParts[1].split()]
     
-    def PrintRuleToRegex(self, rule):
+    def GetRegex(self, rule):
         if type(rule) is str:
-            self.regex += rule
+            return rule
         elif type(rule) is int:
-            self.PrintRuleToRegex(self.rules[rule])
+            if rule == 8:
+                return self.GetRegex(self.rules[rule]) + '+'
+            elif rule == 11:
+                regex42 = self.GetRegex(self.rules[42])
+                regex31 = self.GetRegex(self.rules[31])
+                return '(?P<testing>' + regex42 + regex31 + '|' + regex42 + "(?&testing)" + regex31 + ')'
+            else:
+                return self.GetRegex(self.rules[rule])
         elif type(rule) is list:
-            self.regex += "(?:"
+            regexCur = ''
             for rulePart in rule:
-                self.PrintRuleToRegex(rulePart)
-            self.regex += ")"
+                regexCur += self.GetRegex(rulePart)
+            return '(?:' + regexCur + ')'
         elif type(rule) is tuple:
-            self.regex += '(?:'
-            self.PrintRuleToRegex(rule[0])
-            self.regex += '|'
-            self.PrintRuleToRegex(rule[1])
-            self.regex += ')'
+            return '(?:' + self.GetRegex(rule[0]) + '|' + self.GetRegex(rule[1]) + ')'
 
 input = Input('2020/input/day_19.txt')
-for key in input.rules.keys():
-    print(key)
-    print(input.rules[key])
 numValid = 0
-input.PrintRuleToRegex(0)
-print(input.regex)
+regexString = input.GetRegex(0)
+print(regexString)
+regexCompiled = regex.compile("^" + regexString + "$")
 for message in input.messages:
-    regex = re.compile("^" + input.regex + "$")
-    if regex.match(message):
+    if regexCompiled.match(message):
         numValid += 1
 print(numValid)
