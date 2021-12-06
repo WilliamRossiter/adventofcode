@@ -8,3 +8,9 @@ def AryNFromFile(strFile):
         aryN.append(int(line))
     f.close()
     return aryN
+
+def AryStrFromFile(strFile):
+    aryStr = []
+    f = open(strFile, 'r')
+    input = f.read()
+    return input.splitlines()
